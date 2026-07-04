@@ -1,0 +1,15 @@
+{
+  "name": "movie-catalog",
+  "private": true,
+  "workspaces": [
+    "backend"
+  ],
+  "scripts": {
+    "dev": "./scripts/dev.sh",
+    "dev:backend": "npm run dev -w backend",
+    "build": "npm run build -w backend",
+    "lint": "npm run lint -w backend",
+    "db:migrate": "npm run prisma:migrate -w backend",
+    "db:seed": "npm run seed -w backend"
+  }
+}
