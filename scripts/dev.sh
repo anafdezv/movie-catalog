@@ -5,6 +5,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BACKEND_ENV="$ROOT_DIR/backend/.env"
 BACKEND_ENV_EXAMPLE="$ROOT_DIR/backend/.env.example"
+FRONTEND_ENV="$ROOT_DIR/frontend/.env"
+FRONTEND_ENV_EXAMPLE="$ROOT_DIR/frontend/.env.example"
+FRONTEND_PID=""
 
 log() {
   echo "[movie-catalog] $1"
@@ -14,6 +17,13 @@ ensure_backend_env() {
   if [[ ! -f "$BACKEND_ENV" ]]; then
     cp "$BACKEND_ENV_EXAMPLE" "$BACKEND_ENV"
     log "Created backend/.env from backend/.env.example"
+  fi
+}
+
+ensure_frontend_env() {
+  if [[ -f "$FRONTEND_ENV_EXAMPLE" && ! -f "$FRONTEND_ENV" ]]; then
+    cp "$FRONTEND_ENV_EXAMPLE" "$FRONTEND_ENV"
+    log "Created frontend/.env from frontend/.env.example"
   fi
 }
 
@@ -54,7 +64,10 @@ prepare_backend() {
   npm run prisma:generate -w backend
 
   log "Applying migrations"
-  npx prisma migrate deploy --schema "$ROOT_DIR/backend/prisma/schema.prisma"
+  (
+    cd "$ROOT_DIR/backend"
+    npx prisma migrate deploy --schema prisma/schema.prisma
+  )
 
   log "Seeding database"
   npm run seed -w backend
@@ -65,12 +78,27 @@ start_backend() {
   npm run dev -w backend
 }
 
+start_frontend() {
+  log "Starting frontend dev server"
+  npm run dev -w frontend &
+  FRONTEND_PID=$!
+}
+
+cleanup() {
+  if [[ -n "$FRONTEND_PID" ]] && kill -0 "$FRONTEND_PID" >/dev/null 2>&1; then
+    kill "$FRONTEND_PID" >/dev/null 2>&1 || true
+  fi
+}
+
 main() {
   ensure_backend_env
+  ensure_frontend_env
   ensure_docker
   start_postgres
   wait_for_postgres
   prepare_backend
+  trap cleanup EXIT INT TERM
+  start_frontend
   start_backend
 }
 

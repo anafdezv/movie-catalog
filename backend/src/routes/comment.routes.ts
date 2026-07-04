@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 
-import { createComment, deleteComment, moderateComment, updateComment } from "../controllers/comment.controller.js";
+import { createComment, deleteComment, listComments, moderateComment, updateComment } from "../controllers/comment.controller.js";
 import { requireAdmin, requireAuth } from "../middleware/require-auth.js";
 import { asyncHandler } from "../utils/async-handler.js";
 
@@ -28,6 +28,15 @@ const moderateCommentSchema = z
   });
 
 export const commentRouter = Router();
+
+commentRouter.get(
+  "/",
+  requireAdmin,
+  asyncHandler(async (_request, response) => {
+    const comments = await listComments();
+    response.json(comments);
+  })
+);
 
 commentRouter.post(
   "/",
@@ -74,4 +83,3 @@ commentRouter.patch(
     response.json(comment);
   })
 );
-

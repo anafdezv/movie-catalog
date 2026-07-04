@@ -16,6 +16,12 @@ interface ModerateCommentInput {
 }
 
 const commentInclude = {
+  movie: {
+    select: {
+      id: true,
+      title: true
+    }
+  },
   user: {
     select: {
       id: true,
@@ -24,6 +30,15 @@ const commentInclude = {
     }
   }
 } as const;
+
+export const listComments = async () => {
+  return prisma.comment.findMany({
+    orderBy: {
+      createdAt: "desc"
+    },
+    include: commentInclude
+  });
+};
 
 export const createComment = async (userId: number, input: CreateCommentInput) => {
   const movie = await prisma.movie.findUnique({
@@ -104,4 +119,3 @@ export const moderateComment = async (commentId: number, input: ModerateCommentI
     include: commentInclude
   });
 };
-
