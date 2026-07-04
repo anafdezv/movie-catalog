@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 
 import { env } from "./config/env.js";
+import { attachCurrentUser } from "./middleware/attach-current-user.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { notFound } from "./middleware/not-found.js";
 import { apiRouter } from "./routes/index.js";
@@ -15,6 +16,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(attachCurrentUser);
 
 app.use("/", apiRouter);
 
