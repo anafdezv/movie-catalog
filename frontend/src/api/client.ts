@@ -16,18 +16,24 @@ export class ApiError extends Error {
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { token, headers, body, ...rest } = options;
 
-  const response = await fetch(`${env.apiUrl}${path}`, {
-    ...rest,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers
-    },
-    body
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${env.apiUrl}${path}`, {
+      ...rest,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers
+      },
+      body
+    });
+  } catch {
+    throw new ApiError(0, "No se pudo conectar con la API.");
+  }
 
   if (!response.ok) {
-    let message = "Unexpected API error.";
+    let message = "Error inesperado en la API.";
 
     try {
       const payload = (await response.json()) as { message?: string };
@@ -41,6 +47,9 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     throw new ApiError(response.status, message);
   }
 
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json() as Promise<T>;
 }
-

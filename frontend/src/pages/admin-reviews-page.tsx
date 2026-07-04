@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { ApiError } from "@/api/client";
 import { getAdminComments, moderateComment } from "@/api/comments";
+import { FeedbackState } from "@/components/feedback/feedback-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
@@ -73,8 +74,21 @@ export function AdminReviewsPage() {
 
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Cargando...</p>
+        ) : error && comments.length === 0 ? (
+          <FeedbackState
+            title="No se pudo cargar la moderación"
+            description={error}
+            action={
+              <Button onClick={() => loadComments().catch(() => undefined)} variant="outline">
+                Reintentar
+              </Button>
+            }
+          />
         ) : comments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No hay comentarios para revisar.</p>
+          <FeedbackState
+            title="Sin comentarios"
+            description="No hay comentarios para revisar."
+          />
         ) : (
           comments.map((comment) => {
             const isPending = pendingCommentId === comment.id;

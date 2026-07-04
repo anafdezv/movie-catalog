@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
+import { FeedbackState } from "@/components/feedback/feedback-state";
 import { getMovies } from "@/api/movies";
 import { MovieCard } from "@/components/movies/movie-card";
 import { Button } from "@/components/ui/button";
@@ -17,32 +18,32 @@ export function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadMovies = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await getMovies();
+      setMovies(response);
+    } catch (requestError) {
+      setError(
+        requestError instanceof ApiError ? requestError.message : "No se pudieron cargar las películas."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     let isActive = true;
 
-    getMovies()
-      .then((response) => {
+    loadMovies()
+      .then(() => {
         if (!isActive) {
           return;
         }
-
-        setMovies(response);
-        setError(null);
       })
-      .catch((requestError) => {
-        if (!isActive) {
-          return;
-        }
-
-        setError(
-          requestError instanceof ApiError ? requestError.message : "No se pudieron cargar las peliculas."
-        );
-      })
-      .finally(() => {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      });
+      .catch(() => undefined);
 
     return () => {
       isActive = false;
@@ -77,25 +78,29 @@ export function HomePage() {
       </section>
 
       <section className="space-y-4">
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Peliculas</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Películas</h2>
             <p className="text-sm text-muted-foreground">
-              Un catalogo simple, con portada, sinopsis y valoracion media.
+              Catálogo con portada, sinopsis y valoración media.
             </p>
           </div>
           <span className="text-sm text-muted-foreground">
-            {isLoading ? "Cargando..." : `${movies.length} peliculas`}
+            {isLoading ? "Cargando..." : `${movies.length} películas`}
           </span>
         </div>
 
         {error ? (
-          <Card className="border-destructive/30 bg-card/90">
-            <CardContent className="p-6 text-sm text-destructive">{error}</CardContent>
-          </Card>
-        ) : null}
-
-        {isLoading ? (
+          <FeedbackState
+            description={error}
+            title="No se pudo cargar el catálogo"
+            action={
+              <Button onClick={() => loadMovies().catch(() => undefined)} variant="outline">
+                Reintentar
+              </Button>
+            }
+          />
+        ) : isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <Card key={index} className="overflow-hidden py-0">
@@ -108,6 +113,11 @@ export function HomePage() {
               </Card>
             ))}
           </div>
+        ) : movies.length === 0 ? (
+          <FeedbackState
+            title="No hay películas"
+            description="Cuando cargues películas en el panel de administración aparecerán aquí."
+          />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {movies.map((movie) => (

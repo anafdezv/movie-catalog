@@ -48,16 +48,16 @@ export function RegisterPage() {
       >
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="displayName">Display name</Label>
-            <Input id="displayName" name="displayName" placeholder="Tu nombre" />
+            <Label htmlFor="displayName">Nombre</Label>
+            <Input autoComplete="name" id="displayName" name="displayName" placeholder="Tu nombre" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" placeholder="user@example.com" type="email" />
+            <Input autoComplete="email" id="email" name="email" placeholder="user@example.com" required type="email" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" placeholder="Minimo 6 caracteres" type="password" />
+            <Input autoComplete="new-password" id="password" minLength={6} name="password" placeholder="Mínimo 6 caracteres" required type="password" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="avatarUrl">Avatar URL</Label>
@@ -68,9 +68,9 @@ export function RegisterPage() {
             {isPending ? "Creando cuenta..." : "Registrarme"}
           </Button>
           <p className="text-sm text-muted-foreground">
-            Ya tienes cuenta?{" "}
+            ¿Ya tienes cuenta?{" "}
             <Link className="font-medium text-primary hover:underline" to="/login">
-              Inicia sesion
+              Inicia sesión
             </Link>
           </p>
         </form>

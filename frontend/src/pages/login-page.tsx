@@ -48,20 +48,20 @@ export function LoginPage() {
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" placeholder="demo@moviecatalog.dev" type="email" />
+            <Input autoComplete="email" id="email" name="email" placeholder="demo@moviecatalog.dev" required type="email" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" placeholder="Tu contrasena" type="password" />
+            <Input autoComplete="current-password" id="password" name="password" placeholder="Tu contraseña" required type="password" />
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <Button className="w-full" disabled={isPending} type="submit">
             {isPending ? "Entrando..." : "Iniciar sesion"}
           </Button>
           <p className="text-sm text-muted-foreground">
-            No tienes cuenta?{" "}
+            ¿No tienes cuenta?{" "}
             <Link className="font-medium text-primary hover:underline" to="/register">
-              Registrate
+              Regístrate
             </Link>
           </p>
         </form>

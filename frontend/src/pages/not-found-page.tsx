@@ -11,9 +11,7 @@ export function NotFoundPage() {
           <CardTitle>Ruta no encontrada</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            La navegación base ya está activa, pero esta ruta no existe todavía.
-          </p>
+          <p className="text-sm text-muted-foreground">La página que buscas no existe.</p>
           <Button asChild>
             <Link to="/">Volver al inicio</Link>
           </Button>
@@ -22,4 +20,3 @@ export function NotFoundPage() {
     </div>
   );
 }
-

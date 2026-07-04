@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { ApiError } from "@/api/client";
 import { createMovie, deleteMovie, getMovies, updateMovie } from "@/api/movies";
+import { FeedbackState } from "@/components/feedback/feedback-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -154,8 +155,21 @@ export function AdminMoviesPage() {
         <CardContent className="space-y-3">
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Cargando...</p>
+          ) : error && movies.length === 0 ? (
+            <FeedbackState
+              title="No se pudo cargar el listado"
+              description={error}
+              action={
+                <Button onClick={() => loadMovies().catch(() => undefined)} variant="outline">
+                  Reintentar
+                </Button>
+              }
+            />
           ) : movies.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No hay películas cargadas.</p>
+            <FeedbackState
+              title="No hay películas"
+              description="Crea la primera película desde este formulario."
+            />
           ) : (
             movies.map((movie) => (
               <div

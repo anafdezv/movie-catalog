@@ -6,6 +6,7 @@ import { ApiError } from "@/api/client";
 import { createComment } from "@/api/comments";
 import { getMovie } from "@/api/movies";
 import { saveRating } from "@/api/ratings";
+import { FeedbackState } from "@/components/feedback/feedback-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,7 +44,7 @@ export function MovieDetailPage() {
       setError(null);
     } catch (requestError) {
       setError(
-        requestError instanceof ApiError ? requestError.message : "No se pudo cargar la pelicula."
+        requestError instanceof ApiError ? requestError.message : "No se pudo cargar la película."
       );
     } finally {
       setIsLoading(false);
@@ -121,14 +122,20 @@ export function MovieDetailPage() {
 
   if (error || !movie) {
     return (
-      <Card className="border-border/70 bg-card/95">
-        <CardContent className="space-y-4 p-6">
-          <p className="text-sm text-muted-foreground">{error ?? "Pelicula no encontrada."}</p>
-          <Button asChild variant="outline">
-            <Link to="/">Volver al catálogo</Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <FeedbackState
+        title="No se pudo cargar la película"
+        description={error ?? "Película no encontrada."}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => loadMovie().catch(() => undefined)} variant="outline">
+              Reintentar
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/">Volver al catálogo</Link>
+            </Button>
+          </div>
+        }
+      />
     );
   }
 
@@ -207,11 +214,10 @@ export function MovieDetailPage() {
         </div>
 
         {movie.comments.length === 0 ? (
-          <Card className="border-border/70 bg-card/95">
-            <CardContent className="p-6 text-sm text-muted-foreground">
-              Todavía no hay comentarios en esta película.
-            </CardContent>
-          </Card>
+          <FeedbackState
+            title="Sin comentarios"
+            description="Todavía no hay comentarios en esta película."
+          />
         ) : (
           <div className="space-y-3">
             {movie.comments.map((comment) => (

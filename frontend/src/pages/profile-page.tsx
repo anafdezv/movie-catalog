@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ApiError } from "@/api/client";
 import { deleteComment, updateComment } from "@/api/comments";
 import { getMyActivity, updateMyProfile } from "@/api/users";
+import { FeedbackState } from "@/components/feedback/feedback-state";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,8 @@ export function ProfilePage() {
   const [profileAvatar, setProfileAvatar] = useState(user?.avatarUrl ?? "");
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [pendingCommentId, setPendingCommentId] = useState<number | null>(null);
 
   const loadActivity = async () => {
     if (!token) {
@@ -27,9 +30,9 @@ export function ProfilePage() {
     }
 
     try {
+      setError(null);
       const response = await getMyActivity(token);
       setActivity(response);
-      setError(null);
     } catch (requestError) {
       setError(
         requestError instanceof ApiError ? requestError.message : "No se pudo cargar tu actividad."
@@ -48,16 +51,21 @@ export function ProfilePage() {
       return;
     }
 
+    setIsSavingProfile(true);
+
     try {
       const updatedUser = await updateMyProfile(token, {
         displayName: profileName,
         avatarUrl: profileAvatar.trim() ? profileAvatar.trim() : null
       });
       updateUser(updatedUser);
+      setError(null);
     } catch (requestError) {
       setError(
         requestError instanceof ApiError ? requestError.message : "No se pudo guardar el perfil."
       );
+    } finally {
+      setIsSavingProfile(false);
     }
   };
 
@@ -66,8 +74,18 @@ export function ProfilePage() {
       return;
     }
 
-    await deleteComment(token, commentId);
-    await loadActivity();
+    setPendingCommentId(commentId);
+
+    try {
+      await deleteComment(token, commentId);
+      await loadActivity();
+    } catch (requestError) {
+      setError(
+        requestError instanceof ApiError ? requestError.message : "No se pudo borrar el comentario."
+      );
+    } finally {
+      setPendingCommentId(null);
+    }
   };
 
   const handleSaveComment = async (commentId: number) => {
@@ -75,10 +93,20 @@ export function ProfilePage() {
       return;
     }
 
-    await updateComment(token, commentId, editingContent);
-    setEditingCommentId(null);
-    setEditingContent("");
-    await loadActivity();
+    setPendingCommentId(commentId);
+
+    try {
+      await updateComment(token, commentId, editingContent);
+      setEditingCommentId(null);
+      setEditingContent("");
+      await loadActivity();
+    } catch (requestError) {
+      setError(
+        requestError instanceof ApiError ? requestError.message : "No se pudo actualizar el comentario."
+      );
+    } finally {
+      setPendingCommentId(null);
+    }
   };
 
   return (
@@ -102,7 +130,9 @@ export function ProfilePage() {
                 value={profileAvatar}
               />
             </div>
-            <Button onClick={handleProfileSubmit}>Guardar cambios</Button>
+            <Button disabled={isSavingProfile} onClick={handleProfileSubmit}>
+              {isSavingProfile ? "Guardando..." : "Guardar cambios"}
+            </Button>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
@@ -135,6 +165,16 @@ export function ProfilePage() {
           <CardContent className="space-y-4">
             {isLoading ? (
               <p className="text-sm text-muted-foreground">Cargando...</p>
+            ) : error && !activity ? (
+              <FeedbackState
+                title="No se pudo cargar tu actividad"
+                description={error}
+                action={
+                  <Button onClick={() => loadActivity().catch(() => undefined)} variant="outline">
+                    Reintentar
+                  </Button>
+                }
+              />
             ) : activity?.comments.length ? (
               activity.comments.map((comment) => (
                 <div key={comment.id} className="space-y-3 rounded-2xl border border-border/70 p-4">
@@ -147,6 +187,7 @@ export function ProfilePage() {
                     </div>
                     <div className="flex gap-2">
                       <Button
+                        disabled={pendingCommentId === comment.id}
                         onClick={() => {
                           setEditingCommentId(comment.id);
                           setEditingContent(comment.content);
@@ -156,8 +197,13 @@ export function ProfilePage() {
                       >
                         Editar
                       </Button>
-                      <Button onClick={() => handleDeleteComment(comment.id)} size="sm" variant="outline">
-                        Borrar
+                      <Button
+                        disabled={pendingCommentId === comment.id}
+                        onClick={() => handleDeleteComment(comment.id)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        {pendingCommentId === comment.id ? "Procesando..." : "Borrar"}
                       </Button>
                     </div>
                   </div>
@@ -166,10 +212,11 @@ export function ProfilePage() {
                     <div className="space-y-3">
                       <Textarea onChange={(event) => setEditingContent(event.target.value)} value={editingContent} />
                       <div className="flex gap-2">
-                        <Button onClick={() => handleSaveComment(comment.id)} size="sm">
-                          Guardar
+                        <Button disabled={pendingCommentId === comment.id} onClick={() => handleSaveComment(comment.id)} size="sm">
+                          {pendingCommentId === comment.id ? "Guardando..." : "Guardar"}
                         </Button>
                         <Button
+                          disabled={pendingCommentId === comment.id}
                           onClick={() => {
                             setEditingCommentId(null);
                             setEditingContent("");
@@ -187,7 +234,10 @@ export function ProfilePage() {
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">Todavía no has escrito comentarios.</p>
+              <FeedbackState
+                title="Sin comentarios"
+                description="Todavía no has escrito comentarios."
+              />
             )}
           </CardContent>
         </Card>
@@ -200,6 +250,16 @@ export function ProfilePage() {
           <CardContent className="space-y-3">
             {isLoading ? (
               <p className="text-sm text-muted-foreground">Cargando...</p>
+            ) : error && !activity ? (
+              <FeedbackState
+                title="No se pudo cargar tu actividad"
+                description={error}
+                action={
+                  <Button onClick={() => loadActivity().catch(() => undefined)} variant="outline">
+                    Reintentar
+                  </Button>
+                }
+              />
             ) : activity?.ratings.length ? (
               activity.ratings.map((rating) => (
                 <div
@@ -218,7 +278,10 @@ export function ProfilePage() {
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">Todavía no has valorado películas.</p>
+              <FeedbackState
+                title="Sin valoraciones"
+                description="Todavía no has valorado películas."
+              />
             )}
           </CardContent>
         </Card>
