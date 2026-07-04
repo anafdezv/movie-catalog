@@ -3,61 +3,106 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
+import { createComment } from "@/api/comments";
 import { getMovie } from "@/api/movies";
+import { saveRating } from "@/api/ratings";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { StarRating } from "@/components/movies/star-rating";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import type { MovieDetail } from "@/types/movie";
 
 export function MovieDetailPage() {
   const { id } = useParams();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, token } = useAuth();
   const [movie, setMovie] = useState<MovieDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [commentContent, setCommentContent] = useState("");
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
 
-  useEffect(() => {
-    const movieId = Number(id);
+  const movieId = Number(id);
 
+  const loadMovie = async () => {
     if (!Number.isFinite(movieId)) {
       setError("Pelicula no encontrada.");
       setIsLoading(false);
       return;
     }
 
-    let isActive = true;
+    try {
+      const response = await getMovie(movieId);
+      setMovie(response);
+      setError(null);
+    } catch (requestError) {
+      setError(
+        requestError instanceof ApiError ? requestError.message : "No se pudo cargar la pelicula."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    getMovie(movieId)
-      .then((response) => {
-        if (!isActive) {
-          return;
-        }
-
-        setMovie(response);
-        setError(null);
-      })
-      .catch((requestError) => {
-        if (!isActive) {
-          return;
-        }
-
-        setError(
-          requestError instanceof ApiError ? requestError.message : "No se pudo cargar la pelicula."
-        );
-      })
-      .finally(() => {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      isActive = false;
-    };
+  useEffect(() => {
+    setIsLoading(true);
+    loadMovie().catch(() => undefined);
   }, [id]);
+
+  const handleCommentSubmit = async () => {
+    if (!token || !movie || !commentContent.trim()) {
+      return;
+    }
+
+    setSubmissionError(null);
+    setIsSubmittingComment(true);
+
+    try {
+      await createComment(token, {
+        movieId: movie.id,
+        content: commentContent.trim()
+      });
+      setCommentContent("");
+      await loadMovie();
+    } catch (requestError) {
+      setSubmissionError(
+        requestError instanceof ApiError
+          ? requestError.message
+          : "No se pudo publicar el comentario."
+      );
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleRatingSubmit = async () => {
+    if (!token || !movie || selectedRating < 1) {
+      return;
+    }
+
+    setSubmissionError(null);
+    setIsSubmittingRating(true);
+
+    try {
+      await saveRating(token, {
+        movieId: movie.id,
+        value: selectedRating
+      });
+      await loadMovie();
+    } catch (requestError) {
+      setSubmissionError(
+        requestError instanceof ApiError ? requestError.message : "No se pudo guardar la valoración."
+      );
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -80,7 +125,7 @@ export function MovieDetailPage() {
         <CardContent className="space-y-4 p-6">
           <p className="text-sm text-muted-foreground">{error ?? "Pelicula no encontrada."}</p>
           <Button asChild variant="outline">
-            <Link to="/">Volver al catalogo</Link>
+            <Link to="/">Volver al catálogo</Link>
           </Button>
         </CardContent>
       </Card>
@@ -90,7 +135,7 @@ export function MovieDetailPage() {
   return (
     <div className="space-y-8">
       <section className="grid gap-8 lg:grid-cols-[320px_1fr]">
-        <div className="overflow-hidden rounded-[28px] border border-border/70 bg-card shadow-sm">
+        <div className="overflow-hidden rounded-[20px] border border-border/70 bg-card shadow-sm">
           <img alt={movie.title} className="aspect-[2/3] h-full w-full object-cover" src={movie.coverUrl} />
         </div>
 
@@ -108,18 +153,47 @@ export function MovieDetailPage() {
 
           <p className="max-w-3xl text-base leading-7 text-muted-foreground">{movie.synopsis}</p>
 
-          <div className="rounded-3xl border border-border/70 bg-card/90 p-5">
-            <h2 className="text-lg font-semibold text-foreground">Valoraciones y comentarios</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {isAuthenticated
-                ? "Puedes usar tu cuenta para puntuar la película y escribir un comentario."
-                : "Inicia sesión para puntuar la película y dejar un comentario."}
-            </p>
-            {!isAuthenticated ? (
-              <Button asChild className="mt-4">
-                <Link to="/login">Iniciar sesion</Link>
-              </Button>
-            ) : null}
+          <div className="rounded-2xl border border-border/70 bg-card/90 p-5">
+            <h2 className="text-lg font-semibold text-foreground">Valorar y comentar</h2>
+            {isAuthenticated ? (
+              <div className="mt-4 space-y-5">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Tu valoración</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <StarRating onChange={setSelectedRating} value={selectedRating} />
+                    <Button disabled={isSubmittingRating || selectedRating < 1} onClick={handleRatingSubmit}>
+                      {isSubmittingRating ? "Guardando..." : "Guardar valoración"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">Tu comentario</p>
+                  <Textarea
+                    onChange={(event) => setCommentContent(event.target.value)}
+                    placeholder="Escribe tu comentario"
+                    value={commentContent}
+                  />
+                  <Button
+                    disabled={isSubmittingComment || commentContent.trim().length === 0}
+                    onClick={handleCommentSubmit}
+                  >
+                    {isSubmittingComment ? "Publicando..." : "Publicar comentario"}
+                  </Button>
+                </div>
+
+                {submissionError ? <p className="text-sm text-destructive">{submissionError}</p> : null}
+              </div>
+            ) : (
+              <>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Inicia sesión para puntuar la película y dejar un comentario.
+                </p>
+                <Button asChild className="mt-4">
+                  <Link to="/login">Iniciar sesión</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </section>

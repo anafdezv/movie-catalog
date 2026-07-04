@@ -25,8 +25,8 @@ const protectedLinks = [
 ];
 
 const adminLinks = [
-  { to: "/admin/movies", label: "Admin Movies", icon: Film },
-  { to: "/admin/reviews", label: "Admin Reviews", icon: ShieldCheck }
+  { to: "/admin/movies", label: "Películas", icon: Film },
+  { to: "/admin/reviews", label: "Comentarios", icon: ShieldCheck }
 ];
 
 function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
