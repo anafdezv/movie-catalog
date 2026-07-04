@@ -29,11 +29,11 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       body
     });
   } catch {
-    throw new ApiError(0, "No se pudo conectar con la API.");
+    throw new ApiError(0, "Could not connect to the API.");
   }
 
   if (!response.ok) {
-    let message = "Error inesperado en la API.";
+    let message = "Unexpected API error.";
 
     try {
       const payload = (await response.json()) as { message?: string };

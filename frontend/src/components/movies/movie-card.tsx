@@ -1,42 +1,47 @@
 import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { getMovieMeta } from "@/lib/movie-presentation";
 import type { MovieSummary } from "@/types/movie";
 
 function ratingLabel(value: number | null) {
   if (value === null) {
-    return "Sin votos";
+    return "No ratings";
   }
 
   return `${value.toFixed(1)}/5`;
 }
 
 export function MovieCard({ movie }: { movie: MovieSummary }) {
+  const meta = getMovieMeta(movie);
+
   return (
-    <Link className="group block" to={`/movies/${movie.id}`}>
-      <Card className="overflow-hidden border-border/70 bg-card/90 py-0 transition-transform duration-200 hover:-translate-y-1 hover:shadow-md">
-        <div className="aspect-[2/3] overflow-hidden bg-muted">
+    <Link className="group block space-y-4" to={`/movies/${movie.id}`}>
+      <div className="relative overflow-hidden rounded-[26px] border border-white/6 bg-[#101a24] transition-transform duration-300 hover:-translate-y-1">
+        <div className="aspect-[0.78] overflow-hidden bg-[#0a121b]">
           <img
             alt={movie.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             src={movie.coverUrl}
           />
         </div>
-        <CardContent className="space-y-3 p-4">
-          <div className="flex items-start justify-between gap-3">
-            <h2 className="line-clamp-2 text-base font-semibold tracking-tight text-foreground">
-              {movie.title}
-            </h2>
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900">
-              <Star className="size-3.5 fill-current" />
-              {ratingLabel(movie.avgRating)}
-            </span>
-          </div>
-          <p className="line-clamp-3 text-sm text-muted-foreground">{movie.synopsis}</p>
-        </CardContent>
-      </Card>
+      </div>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[0.76rem] uppercase tracking-[0.34em] text-[#8f8a83]">
+            {meta.genre} · {meta.year}
+          </p>
+          <span className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-[#f5a141]">
+            <Star className="size-3.5 fill-current" />
+            {ratingLabel(movie.avgRating)}
+          </span>
+        </div>
+        <div className="min-h-[4.1rem]">
+          <h2 className="font-display line-clamp-2 text-[1.55rem] leading-[0.95] tracking-[-0.04em] text-[#f6efe3] sm:text-[1.7rem]">
+            {movie.title}
+          </h2>
+        </div>
+      </div>
     </Link>
   );
 }
-

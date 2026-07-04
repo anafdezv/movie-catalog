@@ -11,38 +11,78 @@ const movies = [
   {
     title: "Blade Runner 2049",
     synopsis:
-      "Un blade runner descubre un secreto que amenaza con desestabilizar el equilibrio entre humanos y replicantes.",
-    coverUrl: "https://placehold.co/600x900/141414/f5efe6?text=Blade+Runner+2049"
+      "A blade runner uncovers a secret that could unravel the fragile balance between humans and replicants.",
+    coverUrl: "https://image.tmdb.org/t/p/w780/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"
   },
   {
     title: "Arrival",
     synopsis:
-      "Una lingüista intenta descifrar el lenguaje de visitantes extraterrestres antes de que el miedo desencadene un conflicto global.",
-    coverUrl: "https://placehold.co/600x900/243447/f5efe6?text=Arrival"
+      "A linguist races to decode the language of alien visitors before fear pushes the world into conflict.",
+    coverUrl: "https://image.tmdb.org/t/p/w780/x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg"
   },
   {
     title: "Dune",
     synopsis:
-      "Paul Atreides hereda un destino inmenso en el planeta más peligroso del universo mientras distintas casas compiten por el control de la especia.",
-    coverUrl: "https://placehold.co/600x900/5c3b1e/f5efe6?text=Dune"
+      "Paul Atreides inherits a vast destiny on the most dangerous planet in the universe as rival houses fight for control of the spice.",
+    coverUrl: "https://image.tmdb.org/t/p/w780/d5NXSklXo0qyIYkgV94XAgMIckC.jpg"
   },
   {
     title: "The Grand Budapest Hotel",
     synopsis:
-      "Un conserje legendario y su joven protegido quedan atrapados en una absurda disputa familiar por una herencia de valor incalculable.",
-    coverUrl: "https://placehold.co/600x900/a63d40/f5efe6?text=Grand+Budapest"
+      "A legendary concierge and his young protégé are swept into an absurd family feud over a priceless inheritance.",
+    coverUrl: "https://image.tmdb.org/t/p/w780/eWdyYQreja6JGCzqHWXpWHDrrPo.jpg"
   },
   {
     title: "Spirited Away",
     synopsis:
-      "Una niña cruza accidentalmente a un mundo de espíritus y debe encontrar la forma de rescatar a sus padres y regresar a casa.",
-    coverUrl: "https://placehold.co/600x900/1f5c4a/f5efe6?text=Spirited+Away"
+      "A young girl stumbles into a world of spirits and must find a way to rescue her parents and return home.",
+    coverUrl: "https://image.tmdb.org/t/p/w780/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg"
   },
   {
-    title: "Moonlight",
+    title: "Halloween",
     synopsis:
-      "La vida de Chiron se narra en tres etapas mientras trata de definir su identidad entre la dureza del entorno y sus deseos más íntimos.",
-    coverUrl: "https://placehold.co/600x900/1b3a57/f5efe6?text=Moonlight"
+      "On a quiet Halloween night, a masked killer returns to his hometown and turns the suburbs into a nightmare.",
+    coverUrl: "https://upload.wikimedia.org/wikipedia/en/a/af/Halloween_%281978%29_theatrical_poster.jpg"
+  },
+  {
+    title: "Friday the 13th",
+    synopsis:
+      "A string of brutal murders interrupts the reopening of Camp Crystal Lake and revives its darkest legend.",
+    coverUrl:
+      "https://upload.wikimedia.org/wikipedia/en/thumb/2/2c/Friday_the_13th_%281980%29_theatrical_poster.jpg/250px-Friday_the_13th_%281980%29_theatrical_poster.jpg"
+  },
+  {
+    title: "A Nightmare on Elm Street",
+    synopsis:
+      "A group of teenagers are hunted in their dreams by a scarred killer who turns sleep into a trap.",
+    coverUrl:
+      "https://upload.wikimedia.org/wikipedia/en/thumb/f/fa/A_Nightmare_on_Elm_Street_%281984%29_theatrical_poster.jpg/250px-A_Nightmare_on_Elm_Street_%281984%29_theatrical_poster.jpg"
+  },
+  {
+    title: "Scream",
+    synopsis:
+      "A masked murderer stalks a small town while a group of friends realize they are living inside horror movie rules.",
+    coverUrl:
+      "https://upload.wikimedia.org/wikipedia/en/thumb/8/86/Scream_%281996_film%29_poster.jpg/250px-Scream_%281996_film%29_poster.jpg"
+  },
+  {
+    title: "The Simpsons Movie",
+    synopsis:
+      "Homer triggers a disaster that puts Springfield under a giant dome and forces the family to save their town.",
+    coverUrl: "https://upload.wikimedia.org/wikipedia/en/d/d5/The_Simpsons_Movie_%282007%29.png"
+  },
+  {
+    title: "Pulp Fiction",
+    synopsis:
+      "Hitmen, a boxer, a gangster's wife and a pair of robbers collide in a sharp, nonlinear crime story.",
+    coverUrl:
+      "https://upload.wikimedia.org/wikipedia/en/thumb/3/3b/Pulp_Fiction_%281994%29_poster.jpg/250px-Pulp_Fiction_%281994%29_poster.jpg"
+  },
+  {
+    title: "Kill Bill: Volume 1",
+    synopsis:
+      "After surviving an assassination attempt, a former killer begins a precise and bloody revenge mission.",
+    coverUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/2/2c/Kill_Bill_Volume_1.png/250px-Kill_Bill_Volume_1.png"
   }
 ];
 
@@ -54,14 +94,14 @@ async function main() {
     where: { email: env.adminEmail },
     update: {
       displayName: "Admin",
-      avatarUrl: "https://placehold.co/128x128/141414/f5efe6?text=A",
+      avatarUrl: null,
       password: adminPasswordHash,
       role: "ADMIN"
     },
     create: {
       email: env.adminEmail,
       displayName: "Admin",
-      avatarUrl: "https://placehold.co/128x128/141414/f5efe6?text=A",
+      avatarUrl: null,
       password: adminPasswordHash,
       role: "ADMIN"
     }
@@ -71,14 +111,14 @@ async function main() {
     where: { email: env.demoEmail },
     update: {
       displayName: "Demo User",
-      avatarUrl: "https://placehold.co/128x128/243447/f5efe6?text=D",
+      avatarUrl: null,
       password: demoPasswordHash,
       role: "USER"
     },
     create: {
       email: env.demoEmail,
       displayName: "Demo User",
-      avatarUrl: "https://placehold.co/128x128/243447/f5efe6?text=D",
+      avatarUrl: null,
       password: demoPasswordHash,
       role: "USER"
     }
