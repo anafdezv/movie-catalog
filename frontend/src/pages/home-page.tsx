@@ -79,7 +79,7 @@ export function HomePage() {
   return (
     <div>
       <section
-        className="relative min-h-[780px] overflow-hidden"
+        className="relative min-h-[720px] overflow-hidden"
         style={{
           backgroundImage: `linear-gradient(90deg, rgba(7,16,25,0.9) 0%, rgba(7,16,25,0.55) 46%, rgba(7,16,25,0.38) 100%), url(${altitudeSkyImage})`,
           backgroundSize: "cover",
@@ -87,16 +87,16 @@ export function HomePage() {
         }}
       >
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-b from-transparent via-[#071019]/55 to-[#071019]" />
-        <div className="altitude-shell h-full">
-          <div className="max-w-3xl space-y-8 py-20 sm:py-24 lg:py-36">
+        <div className="altitude-shell flex min-h-[720px] items-center">
+          <div className="max-w-3xl space-y-7 py-16 sm:py-18 lg:py-24">
             <div className="space-y-5">
               <p className="altitude-eyebrow">Issue 07 · Summer Sky</p>
-              <h1 className="font-display text-5xl leading-[0.92] tracking-[-0.06em] text-[#f6efe3] sm:text-6xl lg:text-[5.7rem]">
+              <h1 className="font-display text-[2.9rem] leading-[0.92] tracking-[-0.06em] text-[#f6efe3] sm:text-[4rem] lg:text-[4.9rem]">
                 Cinema at <span className="italic text-[#ff9d42]">thirty-</span>
                 <br />
                 <span className="italic text-[#ff9d42]">eight</span> thousand feet.
               </h1>
-              <p className="max-w-2xl text-base leading-8 text-[#c1bbb2] sm:text-[1.05rem]">
+              <p className="max-w-2xl text-[0.95rem] leading-7 text-[#c1bbb2] sm:text-[1rem]">
                 A hand-curated catalog of films for the long haul — rated by the passengers in the
                 seats around you.
               </p>
@@ -141,7 +141,7 @@ export function HomePage() {
               <div className="space-y-4">
                 <p className="altitude-eyebrow">Feature of the month</p>
                 <div>
-                  <h2 className="font-display text-5xl tracking-[-0.05em] text-[#f6efe3]">
+                  <h2 className="font-display text-[2.7rem] tracking-[-0.05em] text-[#f6efe3]">
                     {featuredMovie.title}
                   </h2>
                   <p className="mt-2 text-sm uppercase tracking-[0.28em] text-[#8f8a83]">
@@ -149,8 +149,8 @@ export function HomePage() {
                     {getMovieMeta(featuredMovie).genre}
                   </p>
                 </div>
-                <p className="max-w-3xl text-lg leading-8 text-[#c1bbb2]">{featuredMovie.synopsis}</p>
-                <p className="text-lg font-semibold text-[#f5a141]">
+                <p className="max-w-3xl text-[1rem] leading-7 text-[#c1bbb2]">{featuredMovie.synopsis}</p>
+                <p className="text-[1rem] font-semibold text-[#f5a141]">
                   {featuredMovie.avgRating === null ? "No ratings yet" : `${featuredMovie.avgRating.toFixed(1)} / 5`}
                 </p>
               </div>
@@ -169,7 +169,7 @@ export function HomePage() {
           <div className="space-y-3">
             <p className="altitude-kicker">The catalog</p>
             <div className="space-y-2">
-              <h2 className="font-display text-5xl tracking-[-0.05em] text-[#f6efe3]">
+              <h2 className="font-display text-[2.8rem] tracking-[-0.05em] text-[#f6efe3]">
                 On board this week
               </h2>
               <p className="text-base text-[#8f8a83]">

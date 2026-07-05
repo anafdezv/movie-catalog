@@ -169,7 +169,7 @@ export function AppShell() {
         <Separator className="bg-white/6" />
         <footer className="flex flex-col gap-4 py-10 text-sm text-[#8f8a83] md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="font-display text-4xl text-[#f6efe3]">Altitude</p>
+            <p className="font-display text-[2rem] text-[#f6efe3]">Altitude</p>
             <p className="mt-2 text-[0.7rem] uppercase tracking-[0.42em]">A mockup for in-flight entertainment</p>
           </div>
           <p className="text-[0.7rem] uppercase tracking-[0.42em]">© 2026 · Gate 7 · Terminal C</p>

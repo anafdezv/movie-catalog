@@ -158,7 +158,7 @@ export function MovieDetailPage() {
   ];
 
   return (
-    <div className="space-y-14">
+    <div className="space-y-12">
       <section className="relative overflow-hidden rounded-[34px] border border-white/6 bg-[#0b131c] px-6 py-8 sm:px-10 sm:py-12">
         <div
           aria-hidden="true"
@@ -182,7 +182,7 @@ export function MovieDetailPage() {
             <img alt={movie.title} className="aspect-[0.72] h-full w-full object-cover" src={movie.coverUrl} />
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             <Link
               className="inline-flex items-center gap-2 text-[0.78rem] font-medium uppercase tracking-[0.32em] text-[#d89842]"
               to="/"
@@ -191,21 +191,21 @@ export function MovieDetailPage() {
               Back to catalog
             </Link>
 
-            <div className="space-y-4">
-              <h1 className="font-display text-6xl tracking-[-0.06em] text-[#f6efe3]">{movie.title}</h1>
+            <div className="space-y-3">
+              <h1 className="font-display text-[3.4rem] tracking-[-0.06em] text-[#f6efe3]">{movie.title}</h1>
               <p className="text-[0.82rem] uppercase tracking-[0.36em] text-[#9c968e]">
                 {movieMeta.year} · {movieMeta.duration} ·{" "}
                 <span className="text-[#e0a048]">{movieMeta.genre}</span>
               </p>
-              <p className="max-w-3xl text-2xl leading-[1.45] text-[#d3ccc2]">{movie.synopsis}</p>
+              <p className="max-w-3xl text-[1.15rem] leading-8 text-[#d3ccc2]">{movie.synopsis}</p>
             </div>
 
             <div className="altitude-panel grid gap-4 px-5 py-5 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-center">
               <div className="space-y-2">
                 <p className="altitude-kicker">Average</p>
-                <p className="font-display text-5xl text-[#f5a141]">
+                <p className="font-display text-[2.7rem] text-[#f5a141]">
                   {movie.avgRating === null ? "—" : movie.avgRating.toFixed(1)}
-                  <span className="ml-2 text-xl text-[#9c968e]">/ 5.0</span>
+                  <span className="ml-2 text-[1rem] text-[#9c968e]">/ 5.0</span>
                 </p>
                 <div className="flex items-center gap-1 text-[#f5a141]">
                   {Array.from({ length: 5 }).map((_, index) => (
@@ -216,7 +216,7 @@ export function MovieDetailPage() {
 
               <div className="space-y-2 border-white/6 lg:border-l lg:pl-6">
                 <p className="altitude-kicker">Cabin notes</p>
-                <p className="font-display text-4xl text-[#f6efe3]">{totalNotes}</p>
+                <p className="font-display text-[2rem] text-[#f6efe3]">{totalNotes}</p>
               </div>
 
               <div className="space-y-2 border-white/6 lg:border-l lg:pl-6">
@@ -239,7 +239,7 @@ export function MovieDetailPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-2">
-              <h2 className="font-display text-5xl tracking-[-0.05em] text-[#f6efe3]">
+              <h2 className="font-display text-[2.7rem] tracking-[-0.05em] text-[#f6efe3]">
                 Cabin conversation
               </h2>
               <p className="altitude-kicker">{totalNotes} notes</p>

@@ -21,6 +21,12 @@ export const deleteComment = (token: string, commentId: number) =>
     token
   });
 
+export const deleteAdminComment = (token: string, commentId: number) =>
+  apiRequest<{ message: string }>(`/comments/${commentId}/admin`, {
+    method: "DELETE",
+    token
+  });
+
 export const getAdminComments = (token: string) =>
   apiRequest<MovieComment[]>("/comments", {
     token
@@ -36,4 +42,3 @@ export const moderateComment = (
     token,
     body: JSON.stringify(input)
   });
-

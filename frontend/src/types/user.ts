@@ -6,6 +6,7 @@ export interface UserActivity {
       movie: {
         id: number;
         title: string;
+        coverUrl: string;
       };
     }
   >;
@@ -14,8 +15,8 @@ export interface UserActivity {
       movie: {
         id: number;
         title: string;
+        coverUrl: string;
       };
     }
   >;
 }
-

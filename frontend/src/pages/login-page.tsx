@@ -77,14 +77,14 @@ export function LoginPage() {
           <span className="inline-flex size-10 items-center justify-center rounded-full bg-[#ff9d42] text-[#09111b]">
             <Plane className="size-4" />
           </span>
-          <span className="font-display text-[2.15rem] leading-none tracking-[-0.05em] text-[#f6efe3]">
+          <span className="font-display text-[1.8rem] leading-none tracking-[-0.05em] text-[#f6efe3]">
             Altitude
           </span>
         </Link>
 
-        <div className="absolute bottom-12 left-10 max-w-xl space-y-6">
+        <div className="absolute bottom-12 left-10 max-w-xl space-y-5">
           <p className="altitude-eyebrow">Boarding pass</p>
-          <p className="font-display text-5xl leading-tight text-[#f6efe3]">
+          <p className="font-display text-[2.7rem] leading-tight text-[#f6efe3]">
             “The window seat is a projector,
             <br />
             and the sky does most of the work.”
@@ -102,8 +102,8 @@ export function LoginPage() {
           </Link>
 
           <div className="space-y-3">
-            <h1 className="font-display text-6xl tracking-[-0.06em] text-[#f6efe3]">Welcome aboard.</h1>
-            <p className="max-w-md text-lg leading-8 text-[#bcb6ac]">
+            <h1 className="font-display text-[3.1rem] tracking-[-0.06em] text-[#f6efe3]">Welcome aboard.</h1>
+            <p className="max-w-md text-[1rem] leading-7 text-[#bcb6ac]">
               Sign in with your loyalty number or email to save ratings across flights.
             </p>
           </div>

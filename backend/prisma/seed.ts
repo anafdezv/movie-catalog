@@ -90,7 +90,7 @@ async function main() {
   const adminPasswordHash = await bcrypt.hash(env.adminPassword, 10);
   const demoPasswordHash = await bcrypt.hash(env.demoPassword, 10);
 
-  await prisma.user.upsert({
+  const adminUser = await prisma.user.upsert({
     where: { email: env.adminEmail },
     update: {
       displayName: "Admin",
@@ -107,7 +107,7 @@ async function main() {
     }
   });
 
-  await prisma.user.upsert({
+  const demoUser = await prisma.user.upsert({
     where: { email: env.demoEmail },
     update: {
       displayName: "Demo User",
@@ -126,6 +126,49 @@ async function main() {
 
   await prisma.movie.deleteMany();
   await prisma.movie.createMany({ data: movies });
+
+  const catalog = await prisma.movie.findMany({
+    select: {
+      id: true,
+      title: true
+    }
+  });
+
+  const movieIdByTitle = Object.fromEntries(catalog.map((movie) => [movie.title, movie.id]));
+
+  await prisma.rating.createMany({
+    data: [
+      { userId: adminUser.id, movieId: movieIdByTitle["Blade Runner 2049"], value: 5 },
+      { userId: adminUser.id, movieId: movieIdByTitle.Arrival, value: 4 },
+      { userId: demoUser.id, movieId: movieIdByTitle["The Grand Budapest Hotel"], value: 5 },
+      { userId: demoUser.id, movieId: movieIdByTitle["Spirited Away"], value: 4 }
+    ]
+  });
+
+  await prisma.comment.createMany({
+    data: [
+      {
+        userId: adminUser.id,
+        movieId: movieIdByTitle["Blade Runner 2049"],
+        content: "Perfect for a red-eye. Dense, beautiful and worth the full runtime."
+      },
+      {
+        userId: adminUser.id,
+        movieId: movieIdByTitle.Arrival,
+        content: "Quiet, smart and exactly the kind of film that improves at cruising altitude."
+      },
+      {
+        userId: demoUser.id,
+        movieId: movieIdByTitle["The Grand Budapest Hotel"],
+        content: "Beautiful production design. Every frame looks first class."
+      },
+      {
+        userId: demoUser.id,
+        movieId: movieIdByTitle["Spirited Away"],
+        content: "Still one of the best comfort watches on a long flight."
+      }
+    ]
+  });
 }
 
 main()

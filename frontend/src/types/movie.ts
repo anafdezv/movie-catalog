@@ -13,6 +13,7 @@ export interface MovieComment {
   content: string;
   hidden: boolean;
   flagged: boolean;
+  userRating?: number | null;
   movieId: number;
   userId: number;
   createdAt: string;

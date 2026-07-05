@@ -32,12 +32,33 @@ const commentInclude = {
 } as const;
 
 export const listComments = async () => {
-  return prisma.comment.findMany({
+  const comments = await prisma.comment.findMany({
     orderBy: {
       createdAt: "desc"
     },
     include: commentInclude
   });
+
+  const ratings = await prisma.rating.findMany({
+    where: {
+      OR: comments.map((comment) => ({
+        userId: comment.userId,
+        movieId: comment.movieId
+      }))
+    },
+    select: {
+      userId: true,
+      movieId: true,
+      value: true
+    }
+  });
+
+  return comments.map((comment) => ({
+    ...comment,
+    userRating:
+      ratings.find((rating) => rating.userId === comment.userId && rating.movieId === comment.movieId)?.value ??
+      null
+  }));
 };
 
 export const createComment = async (userId: number, input: CreateCommentInput) => {
@@ -92,6 +113,22 @@ export const deleteComment = async (commentId: number, userId: number) => {
 
   if (comment.userId !== userId) {
     throw new HttpError(403, "You can only delete your own comments.");
+  }
+
+  await prisma.comment.delete({
+    where: { id: commentId }
+  });
+
+  return { message: "Comment deleted successfully." };
+};
+
+export const deleteCommentAsAdmin = async (commentId: number) => {
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId }
+  });
+
+  if (!comment) {
+    throw new HttpError(404, "Comment not found.");
   }
 
   await prisma.comment.delete({

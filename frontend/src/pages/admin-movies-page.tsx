@@ -160,11 +160,11 @@ export function AdminMoviesPage() {
   return (
     <div className="space-y-10">
       <section className="grid gap-8 xl:grid-cols-[1fr_auto] xl:items-end">
-        <div className="space-y-4">
+        <div className="space-y-3">
           <p className="altitude-eyebrow">Crew panel</p>
           <div>
-            <h1 className="font-display text-6xl tracking-[-0.06em] text-[#f6efe3]">Cabin operations</h1>
-            <p className="mt-3 text-xl text-[#bcb6ac]">
+            <h1 className="font-display text-[3.2rem] tracking-[-0.06em] text-[#f6efe3]">Cabin operations</h1>
+            <p className="mt-2 text-[1rem] text-[#bcb6ac]">
               Manage the catalog and moderate what passengers see.
             </p>
           </div>
@@ -172,8 +172,8 @@ export function AdminMoviesPage() {
 
         <div className="grid gap-4 sm:grid-cols-3">
           {stats.map((stat) => (
-            <div key={stat.label} className="altitude-panel px-8 py-5 text-center">
-              <p className="font-display text-5xl text-[#f5a141]">{stat.value}</p>
+            <div key={stat.label} className="altitude-panel px-6 py-4 text-center">
+              <p className="font-display text-[2.5rem] text-[#f5a141]">{stat.value}</p>
               <p className="mt-2 text-[0.76rem] uppercase tracking-[0.34em] text-[#8f8a83]">
                 {stat.label}
               </p>
@@ -182,11 +182,11 @@ export function AdminMoviesPage() {
         </div>
       </section>
 
-      <div className="flex gap-8 border-b border-white/6">
-        <Link className="border-b-2 border-[#ff9d42] pb-4 text-2xl font-medium text-[#f6efe3]" to="/admin/movies">
+      <div className="flex gap-6 border-b border-white/6">
+        <Link className="border-b-2 border-[#ff9d42] pb-4 text-[1.05rem] font-medium text-[#f6efe3]" to="/admin/movies">
           Movies
         </Link>
-        <Link className="border-b-2 border-transparent pb-4 text-2xl font-medium text-[#8f8a83]" to="/admin/reviews">
+        <Link className="border-b-2 border-transparent pb-4 text-[1.05rem] font-medium text-[#8f8a83]" to="/admin/reviews">
           Reviews
         </Link>
       </div>

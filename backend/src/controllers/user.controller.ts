@@ -19,7 +19,8 @@ export const getMyActivity = async (userId: number) => {
           movie: {
             select: {
               id: true,
-              title: true
+              title: true,
+              coverUrl: true
             }
           }
         }
@@ -32,7 +33,8 @@ export const getMyActivity = async (userId: number) => {
           movie: {
             select: {
               id: true,
-              title: true
+              title: true,
+              coverUrl: true
             }
           }
         }
@@ -66,4 +68,3 @@ export const updateMyProfile = async (userId: number, input: UpdateProfileInput)
 
   return serializeAuthUser(updatedUser);
 };
-

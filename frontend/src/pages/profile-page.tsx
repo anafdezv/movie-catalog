@@ -80,7 +80,15 @@ export function ProfilePage() {
 
     try {
       await deleteComment(token, commentId);
-      await loadActivity();
+      setActivity((current) =>
+        current
+          ? {
+              ...current,
+              comments: current.comments.filter((comment) => comment.id !== commentId)
+            }
+          : current
+      );
+      setError(null);
     } catch (requestError) {
       setError(
         requestError instanceof ApiError ? requestError.message : "Could not delete the note."
@@ -98,10 +106,28 @@ export function ProfilePage() {
     setPendingCommentId(commentId);
 
     try {
-      await updateComment(token, commentId, editingContent);
+      const updatedComment = await updateComment(token, commentId, editingContent);
+      setActivity((current) =>
+        current
+          ? {
+              ...current,
+              comments: current.comments.map((comment) =>
+                comment.id === commentId
+                  ? {
+                      ...comment,
+                      content: updatedComment.content,
+                      hidden: updatedComment.hidden,
+                      flagged: updatedComment.flagged,
+                      updatedAt: updatedComment.updatedAt
+                    }
+                  : comment
+              )
+            }
+          : current
+      );
       setEditingCommentId(null);
       setEditingContent("");
-      await loadActivity();
+      setError(null);
     } catch (requestError) {
       setError(
         requestError instanceof ApiError ? requestError.message : "Could not update the note."
@@ -124,41 +150,55 @@ export function ProfilePage() {
   ];
 
   return (
-    <div className="space-y-12">
-      <section className="grid gap-8 xl:grid-cols-[1fr_260px] xl:items-start">
-        <div className="space-y-4">
+    <div className="space-y-7">
+      <section className="grid gap-5 xl:grid-cols-[1fr_300px] xl:items-start">
+        <div className="space-y-2.5">
           <p className="altitude-eyebrow">Passenger dossier</p>
           <div>
-            <h1 className="font-display text-6xl tracking-[-0.06em] text-[#f6efe3]">
+            <h1 className="font-display text-[2.35rem] leading-[0.92] tracking-[-0.06em] text-[#f6efe3] xl:text-[3rem]">
               Good evening, {user?.displayName.split(" ")[0] ?? "Passenger"}.
             </h1>
-            <p className="mt-3 text-2xl text-[#bcb6ac]">
+            <p className="mt-2 text-[0.92rem] text-[#bcb6ac] xl:text-[1.05rem]">
               {activity?.comments.length ?? 0} notes · {activity?.ratings.length ?? 0} films rated
             </p>
           </div>
         </div>
 
-        <div className="altitude-panel flex items-center gap-4 px-5 py-5">
-          <div className="flex size-16 items-center justify-center rounded-full bg-[#ff9d42] text-2xl font-semibold text-[#08111b]">
-            {user ? getInitials(user.displayName) : "MC"}
+        <div className="altitude-panel ml-auto flex min-w-0 items-center gap-3.5 px-4 py-4 xl:w-full">
+          <div className="flex size-[3.4rem] shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#ff9d42] text-[1.2rem] font-semibold text-[#08111b]">
+            {user?.avatarUrl ? (
+              <img
+                alt={user.displayName}
+                className="h-full w-full object-cover"
+                src={user.avatarUrl}
+              />
+            ) : (
+              <span className="leading-none">{user ? getInitials(user.displayName) : "MC"}</span>
+            )}
           </div>
-          <div className="min-w-0">
-            <p className="text-2xl font-semibold text-[#f6efe3]">{user?.displayName}</p>
-            <p className="text-[0.78rem] uppercase tracking-[0.28em] text-[#8f8a83]">{user?.email}</p>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[1rem] font-semibold leading-none text-[#f6efe3] xl:text-[1.1rem]">
+              {user?.displayName}
+            </p>
+            <p className="mt-1 truncate text-[0.62rem] uppercase tracking-[0.16em] text-[#8f8a83]">
+              {user?.email}
+            </p>
           </div>
         </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="altitude-panel px-5 py-5">
+          <div key={stat.label} className="altitude-panel px-4 py-4">
             <p className="altitude-kicker">{stat.label}</p>
-            <p className="mt-4 font-display text-5xl text-[#f5a141]">{stat.value}</p>
+            <p className="mt-2.5 font-display text-[2rem] leading-none text-[#f5a141] xl:text-[2.35rem]">
+              {stat.value}
+            </p>
           </div>
         ))}
       </section>
 
-      <div className="flex gap-8 border-b border-white/6">
+      <div className="flex gap-4 border-b border-white/6">
         {[
           { id: "notes", label: "My Notes" },
           { id: "ratings", label: "My Ratings" },
@@ -166,7 +206,7 @@ export function ProfilePage() {
         ].map((tab) => (
           <button
             key={tab.id}
-            className={`border-b-2 pb-5 text-2xl font-medium ${
+            className={`border-b-2 pb-4 text-[0.88rem] font-medium xl:text-[0.95rem] ${
               activeTab === tab.id
                 ? "border-[#ff9d42] text-[#f6efe3]"
                 : "border-transparent text-[#9c968e]"
@@ -201,20 +241,26 @@ export function ProfilePage() {
 
               return (
                 <Card key={comment.id} className="border-white/6 bg-[#0d1722]/95 py-0">
-                  <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex min-w-0 gap-4">
-                      <div className="flex size-18 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-[#152231]">
-                        <span className="font-display text-4xl text-[#f5a141]">{comment.movie.title[0]}</span>
+                  <CardContent className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex min-w-0 gap-3.5">
+                      <div className="size-14 shrink-0 overflow-hidden rounded-[14px] bg-[#152231]">
+                        <img
+                          alt={comment.movie.title}
+                          className="h-full w-full object-cover"
+                          src={comment.movie.coverUrl}
+                        />
                       </div>
                       <div className="min-w-0 space-y-2">
-                        <p className="font-display text-4xl text-[#f6efe3]">{comment.movie.title}</p>
-                        <p className="text-sm font-semibold text-[#f5a141]">
+                        <p className="font-display text-[1.45rem] leading-none text-[#f6efe3]">
+                          {comment.movie.title}
+                        </p>
+                        <p className="text-[0.88rem] font-semibold text-[#f5a141]">
                           {rating ? `★`.repeat(rating.value).padEnd(5, "☆") : "No rating"}{" "}
                           <span className="ml-2 text-[0.78rem] uppercase tracking-[0.28em] text-[#8f8a83]">
                             {new Date(comment.createdAt).toLocaleDateString("en-US")}
                           </span>
                         </p>
-                        <p className="max-w-3xl text-lg leading-8 text-[#d3ccc2]">{comment.content}</p>
+                        <p className="max-w-3xl text-[0.95rem] leading-6 text-[#d3ccc2]">{comment.content}</p>
                       </div>
                     </div>
 
@@ -274,7 +320,7 @@ export function ProfilePage() {
 
       {activeTab === "ratings" ? (
         <section className="altitude-panel overflow-hidden">
-          <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 border-b border-white/6 px-6 py-5 text-[0.76rem] uppercase tracking-[0.34em] text-[#8f8a83]">
+          <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 border-b border-white/6 px-5 py-4 text-[0.68rem] uppercase tracking-[0.26em] text-[#8f8a83]">
             <span>Film</span>
             <span>Rated</span>
             <span className="text-right">Your rating</span>
@@ -283,13 +329,15 @@ export function ProfilePage() {
             activity.ratings.map((rating) => (
               <div
                 key={rating.id}
-                className="grid grid-cols-[2fr_1fr_1fr] gap-4 border-b border-white/6 px-6 py-5 last:border-b-0"
+                className="grid grid-cols-[2fr_1fr_1fr] gap-4 border-b border-white/6 px-5 py-4 last:border-b-0"
               >
-                <span className="font-display text-4xl text-[#f6efe3]">{rating.movie.title}</span>
-                <span className="text-[0.78rem] uppercase tracking-[0.28em] text-[#8f8a83]">
+                <span className="font-display text-[1.5rem] leading-none text-[#f6efe3]">
+                  {rating.movie.title}
+                </span>
+                <span className="text-[0.72rem] uppercase tracking-[0.24em] text-[#8f8a83]">
                   {new Date(rating.updatedAt).toLocaleDateString("en-US")}
                 </span>
-                <span className="text-right text-lg font-semibold text-[#f5a141]">
+                <span className="text-right text-[1rem] font-semibold text-[#f5a141]">
                   {"★".repeat(rating.value).padEnd(5, "☆")}
                 </span>
               </div>

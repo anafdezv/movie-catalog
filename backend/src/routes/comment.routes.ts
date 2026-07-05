@@ -1,7 +1,14 @@
 import { Router } from "express";
 import { z } from "zod";
 
-import { createComment, deleteComment, listComments, moderateComment, updateComment } from "../controllers/comment.controller.js";
+import {
+  createComment,
+  deleteComment,
+  deleteCommentAsAdmin,
+  listComments,
+  moderateComment,
+  updateComment
+} from "../controllers/comment.controller.js";
 import { requireAdmin, requireAuth } from "../middleware/require-auth.js";
 import { asyncHandler } from "../utils/async-handler.js";
 
@@ -67,6 +74,17 @@ commentRouter.delete(
   asyncHandler(async (request, response) => {
     const { id } = paramsSchema.parse(request.params);
     const result = await deleteComment(id, request.user!.id);
+
+    response.json(result);
+  })
+);
+
+commentRouter.delete(
+  "/:id/admin",
+  requireAdmin,
+  asyncHandler(async (request, response) => {
+    const { id } = paramsSchema.parse(request.params);
+    const result = await deleteCommentAsAdmin(id);
 
     response.json(result);
   })

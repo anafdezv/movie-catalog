@@ -13,6 +13,23 @@ log() {
   echo "[movie-catalog] $1"
 }
 
+is_port_busy() {
+  local port="$1"
+  lsof -iTCP:"$port" -sTCP:LISTEN -n -P >/dev/null 2>&1
+}
+
+ensure_app_ports_available() {
+  if is_port_busy 4000; then
+    echo "Port 4000 is already in use. Stop the existing backend before running npm run dev." >&2
+    exit 1
+  fi
+
+  if is_port_busy 5173; then
+    echo "Port 5173 is already in use. Stop the existing frontend before running npm run dev." >&2
+    exit 1
+  fi
+}
+
 ensure_backend_env() {
   if [[ ! -f "$BACKEND_ENV" ]]; then
     cp "$BACKEND_ENV_EXAMPLE" "$BACKEND_ENV"
@@ -93,6 +110,7 @@ cleanup() {
 main() {
   ensure_backend_env
   ensure_frontend_env
+  ensure_app_ports_available
   ensure_docker
   start_postgres
   wait_for_postgres
