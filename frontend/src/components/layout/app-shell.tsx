@@ -23,11 +23,11 @@ const publicLinks = [
 ];
 
 const protectedLinks = [
-  { to: "/profile", label: "My Cabin" }
+  { to: "/profile", label: "Profile" }
 ];
 
 const adminLinks = [
-  { to: "/admin/movies", label: "Crew Panel" }
+  { to: "/admin/movies", label: "Admin Panel" }
 ];
 
 function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
@@ -77,8 +77,8 @@ export function AppShell() {
   return (
     <div className="min-h-screen bg-[#071019] text-[#f6efe3]">
       <header className="sticky top-0 z-40 bg-[#09111a]/95 backdrop-blur">
-        <div className="altitude-shell">
-          <div className="grid min-h-[72px] grid-cols-[auto_1fr_auto] items-center gap-4">
+        <div className="mx-auto w-full max-w-[1320px] pl-4 pr-2 sm:px-6 lg:px-8">
+          <div className="grid min-h-[72px] grid-cols-[auto_1fr_auto] items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-3">
               <Sheet>
                 <SheetTrigger asChild>
@@ -87,7 +87,7 @@ export function AppShell() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-80 border-white/6 bg-[#0a121b] text-[#f6efe3]">
-                  <div className="space-y-5 pt-8">
+                  <div className="space-y-5 px-5 pb-8 pt-8 pr-18">
                     <BrandMark compact />
                     <NavigationLinks mobile />
                   </div>
@@ -101,22 +101,17 @@ export function AppShell() {
             </div>
 
             <div className="flex items-center gap-4 justify-self-end">
-              <div className="hidden items-center gap-3 text-[0.66rem] uppercase tracking-[0.42em] text-[#8f8a83] xl:flex">
-                <span>FL 380</span>
-                <span>·</span>
-                <span>549 MPH</span>
-              </div>
               {!isAuthenticated ? (
                 <Button asChild size="sm" variant="outline">
                   <Link to="/login">Sign in</Link>
                 </Button>
               ) : (
-                <DropdownMenu>
+                  <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button className="h-auto rounded-full px-2 py-1.5" variant="ghost">
+                    <Button className="h-auto rounded-full p-0 sm:pl-2 sm:pr-4.5 sm:py-1.5" variant="ghost">
                       <Avatar className="size-9">
                         <AvatarImage alt={user?.displayName} src={user?.avatarUrl ?? undefined} />
-                        <AvatarFallback>
+                        <AvatarFallback className="bg-[#162433] text-[#f6efe3] ring-1 ring-white/8">
                           {user ? getInitials(user.displayName) : "MC"}
                         </AvatarFallback>
                       </Avatar>
@@ -132,14 +127,14 @@ export function AppShell() {
                     align="end"
                     className="w-56 border-white/6 bg-[#0d1722] text-[#f6efe3]"
                   >
-                    <DropdownMenuLabel>My cabin</DropdownMenuLabel>
+                    <DropdownMenuLabel>My profile</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link to="/profile">Profile</Link>
                     </DropdownMenuItem>
                     {isAdmin ? (
                       <DropdownMenuItem asChild>
-                        <Link to="/admin/movies">Crew panel</Link>
+                        <Link to="/admin/movies">Admin panel</Link>
                       </DropdownMenuItem>
                     ) : null}
                     <DropdownMenuSeparator />

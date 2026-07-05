@@ -3,18 +3,7 @@ import { comparePassword, hashPassword } from "../utils/password.js";
 import { signAuthToken } from "../utils/auth-token.js";
 import { serializeAuthUser } from "../utils/serialize-auth-user.js";
 import { HttpError } from "../utils/http-error.js";
-
-interface RegisterInput {
-  email: string;
-  password: string;
-  displayName: string;
-  avatarUrl?: string | null;
-}
-
-interface LoginInput {
-  email: string;
-  password: string;
-}
+import type { LoginInput, RegisterInput } from "../types/auth.js";
 
 const buildAuthResponse = (token: string, user: ReturnType<typeof serializeAuthUser>) => ({
   token,
@@ -66,4 +55,3 @@ export const loginUser = async (input: LoginInput) => {
 
   return buildAuthResponse(token, authUser);
 };
-

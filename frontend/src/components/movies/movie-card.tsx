@@ -18,10 +18,10 @@ export function MovieCard({ movie }: { movie: MovieSummary }) {
   return (
     <Link className="group block space-y-4" to={`/movies/${movie.id}`}>
       <div className="relative overflow-hidden rounded-[26px] border border-white/6 bg-[#101a24] transition-transform duration-300 hover:-translate-y-1">
-        <div className="aspect-[0.78] overflow-hidden bg-[#0a121b]">
+        <div className="aspect-[2/3] overflow-hidden bg-[#0a121b]">
           <img
             alt={movie.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.04]"
             src={movie.coverUrl}
           />
         </div>

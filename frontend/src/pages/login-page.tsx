@@ -102,9 +102,9 @@ export function LoginPage() {
           </Link>
 
           <div className="space-y-3">
-            <h1 className="font-display text-[3.1rem] tracking-[-0.06em] text-[#f6efe3]">Welcome aboard.</h1>
+            <h1 className="font-display text-[3.1rem] tracking-[-0.06em] text-[#f6efe3]">Sign in.</h1>
             <p className="max-w-md text-[1rem] leading-7 text-[#bcb6ac]">
-              Sign in with your loyalty number or email to save ratings across flights.
+              Sign in to rate movies and leave comments.
             </p>
           </div>
 
@@ -150,8 +150,8 @@ export function LoginPage() {
           </Button>
           <p className="text-sm text-[#8f8a83]">
             No account?{" "}
-            <Link className="font-medium text-[#f5a141] hover:underline" to="/register">
-              Create one at 38,000 ft.
+            <Link className="font-medium text-[#f5a141] hover:underline" to="/register" state={{ from }}>
+              Create an account
             </Link>
           </p>
         </form>

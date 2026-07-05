@@ -30,6 +30,9 @@ model Movie {
   title     String
   synopsis  String
   coverUrl  String
+  genre     String
+  year      Int
+  avgRating Float?
   comments  Comment[]
   ratings   Rating[]
   createdAt DateTime  @default(now())
@@ -47,6 +50,8 @@ model Comment {
   movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([userId, movieId])
 }
 
 model Rating {
@@ -61,4 +66,3 @@ model Rating {
 
   @@unique([userId, movieId])
 }
-

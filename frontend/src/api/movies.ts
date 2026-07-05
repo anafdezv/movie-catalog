@@ -7,7 +7,7 @@ export const getMovie = (movieId: number) => apiRequest<MovieDetail>(`/movies/${
 
 export const createMovie = (
   token: string,
-  input: { title: string; synopsis: string; coverUrl: string }
+  input: { title: string; synopsis: string; coverUrl: string; genre: string; year: number }
 ) =>
   apiRequest<MovieSummary>("/movies", {
     method: "POST",
@@ -18,7 +18,7 @@ export const createMovie = (
 export const updateMovie = (
   token: string,
   movieId: number,
-  input: { title: string; synopsis: string; coverUrl: string }
+  input: { title: string; synopsis: string; coverUrl: string; genre: string; year: number }
 ) =>
   apiRequest<MovieSummary>(`/movies/${movieId}`, {
     method: "PUT",
@@ -31,4 +31,3 @@ export const deleteMovie = (token: string, movieId: number) =>
     method: "DELETE",
     token
   });
-

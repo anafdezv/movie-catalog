@@ -1,23 +1,58 @@
-import { useEffect, useMemo, useState } from "react";
+import { Search, Star } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
-import { getAdminComments } from "@/api/comments";
 import { createMovie, deleteMovie, getMovies, updateMovie } from "@/api/movies";
 import { FeedbackState } from "@/components/feedback/feedback-state";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import { getMovieMeta } from "@/lib/movie-presentation";
-import type { MovieComment, MovieSummary } from "@/types/movie";
+import { MOVIE_GENRES } from "@/lib/movie-presentation";
+import type { MovieSummary } from "@/types/movie";
 
-type SortMode = "rating" | "title";
+type SortMode = "rating" | "title" | "year";
+
+function renderRatingStars(value: number | null) {
+  const roundedValue = Math.round(value ?? 0);
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-0.5 text-[#f5a141]">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Star
+            key={index}
+            className={`size-3.5 ${index < roundedValue ? "fill-current text-[#f5a141]" : "text-[#5f6976]"}`}
+          />
+        ))}
+      </div>
+      <span className="text-base font-semibold text-[#c8c1b7]">
+        {value === null ? "—" : value.toFixed(1)}
+      </span>
+    </div>
+  );
+}
 
 export function AdminMoviesPage() {
   const { token } = useAuth();
   const [movies, setMovies] = useState<MovieSummary[]>([]);
-  const [comments, setComments] = useState<MovieComment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -29,19 +64,17 @@ export function AdminMoviesPage() {
   const [title, setTitle] = useState("");
   const [synopsis, setSynopsis] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
+  const [genre, setGenre] = useState<(typeof MOVIE_GENRES)[number]>(MOVIE_GENRES[0]);
+  const [year, setYear] = useState("2026");
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!token) {
       return;
     }
 
     try {
-      const [moviesResponse, commentsResponse] = await Promise.all([
-        getMovies(),
-        getAdminComments(token)
-      ]);
+      const moviesResponse = await getMovies();
       setMovies(moviesResponse);
-      setComments(commentsResponse);
       setError(null);
     } catch (requestError) {
       setError(
@@ -50,23 +83,36 @@ export function AdminMoviesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     loadData().catch(() => undefined);
-  }, [token]);
+  }, [loadData]);
 
   const resetForm = () => {
     setEditingId(null);
     setTitle("");
     setSynopsis("");
     setCoverUrl("");
+    setGenre(MOVIE_GENRES[0]);
+    setYear("2026");
     setIsFormOpen(false);
   };
 
+  const openCreateModal = () => {
+    setError(null);
+    setEditingId(null);
+    setTitle("");
+    setSynopsis("");
+    setCoverUrl("");
+    setGenre(MOVIE_GENRES[0]);
+    setYear("2026");
+    setIsFormOpen(true);
+  };
+
   const handleSubmit = async () => {
-    if (!token || !title.trim() || !synopsis.trim() || !coverUrl.trim()) {
-      setError("Complete all film fields.");
+    if (!token || !title.trim() || !synopsis.trim() || !coverUrl.trim() || !year.trim()) {
+      setError("Complete all movie fields.");
       return;
     }
 
@@ -77,7 +123,9 @@ export function AdminMoviesPage() {
       const payload = {
         title: title.trim(),
         synopsis: synopsis.trim(),
-        coverUrl: coverUrl.trim()
+        coverUrl: coverUrl.trim(),
+        genre,
+        year: Number(year)
       };
 
       if (editingId) {
@@ -89,7 +137,7 @@ export function AdminMoviesPage() {
       resetForm();
       await loadData();
     } catch (requestError) {
-      setError(requestError instanceof ApiError ? requestError.message : "Could not save the film.");
+      setError(requestError instanceof ApiError ? requestError.message : "Could not save the movie.");
     } finally {
       setIsSaving(false);
     }
@@ -100,6 +148,8 @@ export function AdminMoviesPage() {
     setTitle(movie.title);
     setSynopsis(movie.synopsis);
     setCoverUrl(movie.coverUrl);
+    setGenre(movie.genre as (typeof MOVIE_GENRES)[number]);
+    setYear(String(movie.year));
     setIsFormOpen(true);
     setError(null);
   };
@@ -119,7 +169,7 @@ export function AdminMoviesPage() {
       }
       await loadData();
     } catch (requestError) {
-      setError(requestError instanceof ApiError ? requestError.message : "Could not delete the film.");
+      setError(requestError instanceof ApiError ? requestError.message : "Could not delete the movie.");
     } finally {
       setDeletingId(null);
     }
@@ -133,12 +183,11 @@ export function AdminMoviesPage() {
         return true;
       }
 
-      const meta = getMovieMeta(movie);
-
       return (
         movie.title.toLowerCase().includes(normalizedSearch) ||
         movie.synopsis.toLowerCase().includes(normalizedSearch) ||
-        meta.genre.toLowerCase().includes(normalizedSearch)
+        movie.genre.toLowerCase().includes(normalizedSearch) ||
+        String(movie.year).includes(normalizedSearch)
       );
     });
 
@@ -147,42 +196,17 @@ export function AdminMoviesPage() {
         return left.title.localeCompare(right.title);
       }
 
+      if (sortMode === "year") {
+        return right.year - left.year;
+      }
+
       return (right.avgRating ?? 0) - (left.avgRating ?? 0);
     });
   }, [movies, search, sortMode]);
 
-  const stats = [
-    { label: "Films", value: movies.length },
-    { label: "Reviews", value: comments.length },
-    { label: "Flagged", value: comments.filter((comment) => comment.flagged).length }
-  ];
-
   return (
-    <div className="space-y-10">
-      <section className="grid gap-8 xl:grid-cols-[1fr_auto] xl:items-end">
-        <div className="space-y-3">
-          <p className="altitude-eyebrow">Crew panel</p>
-          <div>
-            <h1 className="font-display text-[3.2rem] tracking-[-0.06em] text-[#f6efe3]">Cabin operations</h1>
-            <p className="mt-2 text-[1rem] text-[#bcb6ac]">
-              Manage the catalog and moderate what passengers see.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          {stats.map((stat) => (
-            <div key={stat.label} className="altitude-panel px-6 py-4 text-center">
-              <p className="font-display text-[2.5rem] text-[#f5a141]">{stat.value}</p>
-              <p className="mt-2 text-[0.76rem] uppercase tracking-[0.34em] text-[#8f8a83]">
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <div className="flex gap-6 border-b border-white/6">
+    <div className="space-y-8">
+      <div className="flex gap-8 border-b border-white/6">
         <Link className="border-b-2 border-[#ff9d42] pb-4 text-[1.05rem] font-medium text-[#f6efe3]" to="/admin/movies">
           Movies
         </Link>
@@ -192,57 +216,37 @@ export function AdminMoviesPage() {
       </div>
 
       <section className="space-y-6">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
-          <div className="flex-1">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-5 top-1/2 size-5 -translate-y-1/2 text-[#8f8a83]" />
             <Input
+              className="pl-13"
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search films..."
               value={search}
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="text-[0.76rem] uppercase tracking-[0.34em] text-[#8f8a83]">Sort</label>
-            <select
-              className="h-11 rounded-[18px] border border-white/8 bg-[#101a24] px-4 text-[#f6efe3] outline-none"
-              onChange={(event) => setSortMode(event.target.value as SortMode)}
-              value={sortMode}
-            >
-              <option value="rating">Rating</option>
-              <option value="title">Title</option>
-            </select>
-            <Button
-              onClick={() => {
-                setIsFormOpen((current) => !current);
-                if (editingId === null) {
-                  setTitle("");
-                  setSynopsis("");
-                  setCoverUrl("");
-                }
-              }}
-            >
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-3">
+              <label className="text-[0.76rem] uppercase tracking-[0.34em] text-[#8f8a83]">Sort</label>
+              <Select onValueChange={(value) => setSortMode(value as SortMode)} value={sortMode}>
+                <SelectTrigger className="min-w-[144px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rating">Rating</SelectItem>
+                  <SelectItem value="year">Year</SelectItem>
+                  <SelectItem value="title">Title</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button onClick={openCreateModal} size="lg">
               + New film
             </Button>
           </div>
         </div>
-
-        {isFormOpen ? (
-          <div className="altitude-panel grid gap-4 px-5 py-5">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <Input onChange={(event) => setTitle(event.target.value)} placeholder="Film title" value={title} />
-              <Input onChange={(event) => setCoverUrl(event.target.value)} placeholder="Cover URL" value={coverUrl} />
-            </div>
-            <Textarea onChange={(event) => setSynopsis(event.target.value)} placeholder="Synopsis" value={synopsis} />
-            <div className="flex gap-2">
-              <Button disabled={isSaving} onClick={handleSubmit}>
-                {isSaving ? "Saving..." : editingId ? "Save changes" : "Create film"}
-              </Button>
-              <Button disabled={isSaving} onClick={resetForm} variant="outline">
-                Cancel
-              </Button>
-            </div>
-          </div>
-        ) : null}
 
         {error && movies.length === 0 ? (
           <FeedbackState
@@ -261,8 +265,8 @@ export function AdminMoviesPage() {
         ) : filteredMovies.length === 0 ? (
           <FeedbackState title="No films found" description="Try another search or add a new film." />
         ) : (
-          <div className="altitude-panel overflow-hidden">
-            <div className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] gap-4 border-b border-white/6 px-6 py-5 text-[0.76rem] uppercase tracking-[0.34em] text-[#8f8a83]">
+          <div className="overflow-hidden rounded-[30px] border border-white/6 bg-[#0d1722]/95">
+            <div className="grid grid-cols-[minmax(0,3.5fr)_0.9fr_0.8fr_0.9fr_0.9fr_1fr] gap-4 border-b border-white/6 px-8 py-5 text-[0.76rem] uppercase tracking-[0.34em] text-[#8f8a83]">
               <span>Film</span>
               <span>Genre</span>
               <span>Year</span>
@@ -272,35 +276,43 @@ export function AdminMoviesPage() {
             </div>
 
             {filteredMovies.map((movie, index) => {
-              const meta = getMovieMeta(movie);
-              const status =
-                index === 0 && sortMode === "rating"
-                  ? { label: "Featured", className: "bg-[#3d2a18] text-[#e5a351]" }
-                  : { label: "Live", className: "bg-[#1a2734] text-[#b3c2d5]" };
+              const isFeatured = index === 0 && sortMode === "rating";
 
               return (
                 <div
                   key={movie.id}
-                  className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_1fr] gap-4 border-b border-white/6 px-6 py-5 last:border-b-0"
+                  className="grid grid-cols-[minmax(0,3.5fr)_0.9fr_0.8fr_0.9fr_0.9fr_1fr] gap-4 border-b border-white/6 px-8 py-5 last:border-b-0"
                 >
-                  <div className="flex min-w-0 items-center gap-4">
-                    <img alt={movie.title} className="h-16 w-12 rounded-[12px] object-cover" src={movie.coverUrl} />
-                    <div className="min-w-0">
-                      <p className="font-display text-4xl leading-none text-[#f6efe3]">{movie.title}</p>
-                      <p className="mt-2 line-clamp-1 text-sm text-[#8f8a83]">{movie.synopsis}</p>
+                  <Link
+                    className="group flex min-w-0 items-center gap-4 rounded-[18px] outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#f5a141]/50"
+                    to={`/movies/${movie.id}`}
+                  >
+                    <img
+                      alt={movie.title}
+                      className="h-22 w-16 rounded-[14px] bg-[#0a121b] object-contain"
+                      src={movie.coverUrl}
+                    />
+                    <div className="min-w-0 space-y-1.5">
+                      <p className="font-display text-[2.15rem] leading-none text-[#f6efe3] transition-colors group-hover:text-[#f5a141]">
+                        {movie.title}
+                      </p>
+                      <p className="line-clamp-1 text-[1rem] text-[#a59f95]">{movie.synopsis}</p>
                     </div>
-                  </div>
-                  <span className="self-center text-[0.76rem] uppercase tracking-[0.34em] text-[#bcb6ac]">{meta.genre}</span>
-                  <span className="self-center text-[0.76rem] uppercase tracking-[0.34em] text-[#bcb6ac]">{meta.year}</span>
-                  <span className="self-center text-lg font-semibold text-[#f5a141]">
-                    ★ {movie.avgRating?.toFixed(1) ?? "—"}
-                  </span>
+                  </Link>
+
+                  <span className="self-center text-[0.92rem] uppercase tracking-[0.34em] text-[#c8c1b7]">{movie.genre}</span>
+                  <span className="self-center text-[1rem] text-[#c8c1b7]">{movie.year}</span>
+                  <div className="self-center">{renderRatingStars(movie.avgRating)}</div>
                   <div className="self-center">
-                    <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${status.className}`}>
-                      {status.label}
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${
+                        isFeatured ? "bg-[#4c331a] text-[#f0aa58]" : "bg-[#1b2a3a] text-[#b4c4d6]"
+                      }`}
+                    >
+                      {isFeatured ? "Featured" : "Live"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-end gap-2">
+                  <div className="flex items-center justify-end gap-3">
                     <Button onClick={() => handleEdit(movie)} size="sm" variant="outline">
                       Edit
                     </Button>
@@ -320,6 +332,106 @@ export function AdminMoviesPage() {
           </div>
         )}
       </section>
+
+      <Dialog
+        onOpenChange={(open) => {
+          setIsFormOpen(open);
+
+          if (!open && !isSaving) {
+            resetForm();
+          }
+        }}
+        open={isFormOpen}
+      >
+        <DialogContent className="max-w-2xl rounded-[30px] border-white/10 bg-[#0d1722] p-6 text-[#f6efe3]">
+          <DialogHeader className="space-y-2 text-left">
+            <DialogTitle className="font-display text-[3rem] leading-none tracking-[-0.06em] text-[#f6efe3]">
+              {editingId ? "Edit movie" : "Add a new movie"}
+            </DialogTitle>
+            <DialogDescription className="max-w-xl text-[1rem] leading-7 text-[#bcb6ac]">
+              Set the core catalog metadata shown across the app.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-5">
+            <div className="space-y-2">
+              <Label htmlFor="movie-title">Movie title</Label>
+              <Input
+                id="movie-title"
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="Movie title"
+                value={title}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="movie-cover-url">Cover URL</Label>
+              <Input
+                id="movie-cover-url"
+                onChange={(event) => setCoverUrl(event.target.value)}
+                placeholder="https://..."
+                value={coverUrl}
+              />
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="movie-genre">Genre</Label>
+                <Select
+                  onValueChange={(value) => setGenre(value as (typeof MOVIE_GENRES)[number])}
+                  value={genre}
+                >
+                  <SelectTrigger id="movie-genre">
+                    <SelectValue placeholder="Select a genre" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MOVIE_GENRES.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="movie-year">Year</Label>
+                <Input
+                  id="movie-year"
+                  inputMode="numeric"
+                  maxLength={4}
+                  onChange={(event) => setYear(event.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder="2026"
+                  type="text"
+                  value={year}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="movie-synopsis">Synopsis</Label>
+              <Textarea
+                className="min-h-36 resize-none"
+                id="movie-synopsis"
+                onChange={(event) => setSynopsis(event.target.value)}
+                placeholder="Write a short synopsis"
+                value={synopsis}
+              />
+            </div>
+
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          </div>
+
+          <DialogFooter className="gap-3 pt-2">
+            <Button disabled={isSaving} onClick={handleSubmit} size="lg">
+              {isSaving ? "Saving..." : editingId ? "Save changes" : "Create movie"}
+            </Button>
+            <Button disabled={isSaving} onClick={resetForm} size="lg" variant="outline">
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

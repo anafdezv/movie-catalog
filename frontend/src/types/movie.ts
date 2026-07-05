@@ -3,6 +3,8 @@ export interface MovieSummary {
   title: string;
   synopsis: string;
   coverUrl: string;
+  genre: string;
+  year: number;
   avgRating: number | null;
   createdAt: string;
   updatedAt: string;

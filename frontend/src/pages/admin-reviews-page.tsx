@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
@@ -45,7 +45,7 @@ export function AdminReviewsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!token) {
       return;
     }
@@ -65,11 +65,11 @@ export function AdminReviewsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     loadData().catch(() => undefined);
-  }, [token]);
+  }, [loadData]);
 
   const handleModeration = async (
     commentId: number,
@@ -145,11 +145,11 @@ export function AdminReviewsPage() {
     <div className="space-y-10">
       <section className="grid gap-8 xl:grid-cols-[1fr_auto] xl:items-end">
         <div className="space-y-3">
-          <p className="altitude-eyebrow">Crew panel</p>
+          <p className="altitude-eyebrow">Admin Panel</p>
           <div>
-            <h1 className="font-display text-[3.2rem] tracking-[-0.06em] text-[#f6efe3]">Cabin operations</h1>
+            <h1 className="font-display text-[3.2rem] tracking-[-0.06em] text-[#f6efe3]">Admin Dashboard</h1>
             <p className="mt-2 text-[1rem] text-[#bcb6ac]">
-              Review passenger notes and moderate visibility.
+              Review comments and moderate visibility.
             </p>
           </div>
         </div>

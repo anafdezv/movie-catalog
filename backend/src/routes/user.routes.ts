@@ -1,18 +1,9 @@
 import { Router } from "express";
-import { z } from "zod";
 
 import { getMyActivity, updateMyProfile } from "../controllers/user.controller.js";
 import { requireAuth } from "../middleware/require-auth.js";
 import { asyncHandler } from "../utils/async-handler.js";
-
-const updateProfileSchema = z
-  .object({
-    displayName: z.string().trim().min(2, "Display name must be at least 2 characters long.").optional(),
-    avatarUrl: z.string().trim().url("Avatar URL must be valid.").nullable().optional()
-  })
-  .refine((input) => input.displayName !== undefined || input.avatarUrl !== undefined, {
-    message: "At least one profile field is required."
-  });
+import { updateProfileSchema } from "../validators/user.js";
 
 export const userRouter = Router();
 
@@ -35,4 +26,3 @@ userRouter.patch(
     response.json(user);
   })
 );
-

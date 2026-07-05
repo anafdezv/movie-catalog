@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ApiError } from "@/api/client";
 import { deleteComment, updateComment } from "@/api/comments";
@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import { getInitials } from "@/lib/movie-presentation";
 import type { UserActivity } from "@/types/user";
 
 export function ProfilePage() {
@@ -26,7 +25,7 @@ export function ProfilePage() {
   const [pendingCommentId, setPendingCommentId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"notes" | "ratings" | "preferences">("notes");
 
-  const loadActivity = async () => {
+  const loadActivity = useCallback(async () => {
     if (!token) {
       return;
     }
@@ -42,11 +41,11 @@ export function ProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     loadActivity().catch(() => undefined);
-  }, [token]);
+  }, [loadActivity]);
 
   const handleProfileSubmit = async () => {
     if (!token) {
@@ -151,37 +150,15 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-7">
-      <section className="grid gap-5 xl:grid-cols-[1fr_300px] xl:items-start">
+      <section className="space-y-2.5">
         <div className="space-y-2.5">
-          <p className="altitude-eyebrow">Passenger dossier</p>
+          <p className="altitude-eyebrow">Profile</p>
           <div>
             <h1 className="font-display text-[2.35rem] leading-[0.92] tracking-[-0.06em] text-[#f6efe3] xl:text-[3rem]">
               Good evening, {user?.displayName.split(" ")[0] ?? "Passenger"}.
             </h1>
             <p className="mt-2 text-[0.92rem] text-[#bcb6ac] xl:text-[1.05rem]">
               {activity?.comments.length ?? 0} notes · {activity?.ratings.length ?? 0} films rated
-            </p>
-          </div>
-        </div>
-
-        <div className="altitude-panel ml-auto flex min-w-0 items-center gap-3.5 px-4 py-4 xl:w-full">
-          <div className="flex size-[3.4rem] shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#ff9d42] text-[1.2rem] font-semibold text-[#08111b]">
-            {user?.avatarUrl ? (
-              <img
-                alt={user.displayName}
-                className="h-full w-full object-cover"
-                src={user.avatarUrl}
-              />
-            ) : (
-              <span className="leading-none">{user ? getInitials(user.displayName) : "MC"}</span>
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[1rem] font-semibold leading-none text-[#f6efe3] xl:text-[1.1rem]">
-              {user?.displayName}
-            </p>
-            <p className="mt-1 truncate text-[0.62rem] uppercase tracking-[0.16em] text-[#8f8a83]">
-              {user?.email}
             </p>
           </div>
         </div>
@@ -200,7 +177,7 @@ export function ProfilePage() {
 
       <div className="flex gap-4 border-b border-white/6">
         {[
-          { id: "notes", label: "My Notes" },
+          { id: "notes", label: "My Comments" },
           { id: "ratings", label: "My Ratings" },
           { id: "preferences", label: "Preferences" }
         ].map((tab) => (
@@ -246,7 +223,7 @@ export function ProfilePage() {
                       <div className="size-14 shrink-0 overflow-hidden rounded-[14px] bg-[#152231]">
                         <img
                           alt={comment.movie.title}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-contain"
                           src={comment.movie.coverUrl}
                         />
                       </div>
@@ -372,7 +349,7 @@ export function ProfilePage() {
             </div>
             <div>
               <p className="text-xl font-semibold text-[#f6efe3]">Avatar preview</p>
-              <p className="text-sm text-[#8f8a83]">Used across your notes and cabin profile.</p>
+              <p className="text-sm text-[#8f8a83]">Used across your comments and profile.</p>
             </div>
           </div>
 

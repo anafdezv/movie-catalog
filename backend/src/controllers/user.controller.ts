@@ -1,11 +1,7 @@
 import { prisma } from "../lib/prisma.js";
 import { HttpError } from "../utils/http-error.js";
 import { serializeAuthUser } from "../utils/serialize-auth-user.js";
-
-interface UpdateProfileInput {
-  displayName?: string;
-  avatarUrl?: string | null;
-}
+import type { UpdateProfileInput } from "../types/user.js";
 
 export const getMyActivity = async (userId: number) => {
   const user = await prisma.user.findUnique({

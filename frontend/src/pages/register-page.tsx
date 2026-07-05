@@ -1,6 +1,6 @@
 import { type FormEvent, useState, useTransition } from "react";
 import { Plane } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { altitudeSkyImage } from "@/lib/movie-presentation";
 export function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{
@@ -19,6 +20,7 @@ export function RegisterPage() {
     email?: string;
     password?: string;
   }>({});
+  const from = (location.state as { from?: string } | null)?.from ?? "/profile";
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,7 +63,7 @@ export function RegisterPage() {
           avatarUrl: null
         });
 
-        navigate("/profile", { replace: true });
+        navigate(from, { replace: true });
       } catch (submissionError) {
         setError(
           submissionError instanceof ApiError
@@ -92,14 +94,9 @@ export function RegisterPage() {
         </Link>
 
         <div className="absolute bottom-12 left-10 max-w-xl space-y-5">
-          <p className="altitude-eyebrow">First flight</p>
-          <p className="font-display text-[2.7rem] leading-tight text-[#f6efe3]">
-            Build your cabin profile
-            <br />
-            before takeoff.
-          </p>
+          <p className="font-display text-[2.7rem] leading-tight text-[#f6efe3]">Create your account.</p>
           <p className="text-[0.78rem] uppercase tracking-[0.34em] text-[#b6b0a8]">
-            Save your notes and ratings across the catalog
+            Save your comments and ratings across the catalog
           </p>
         </div>
       </section>
@@ -113,7 +110,7 @@ export function RegisterPage() {
           <div className="space-y-3">
             <h1 className="font-display text-[3.1rem] tracking-[-0.06em] text-[#f6efe3]">Create account.</h1>
             <p className="max-w-md text-[1rem] leading-7 text-[#bcb6ac]">
-              Set up your passenger profile to save ratings, notes and cabin preferences.
+              Create your profile to save ratings and comments.
             </p>
           </div>
 
@@ -176,7 +173,7 @@ export function RegisterPage() {
           </Button>
           <p className="text-sm text-[#8f8a83]">
             Already have an account?{" "}
-            <Link className="font-medium text-[#f5a141] hover:underline" to="/login">
+            <Link className="font-medium text-[#f5a141] hover:underline" to="/login" state={{ from }}>
               Sign in
             </Link>
           </p>

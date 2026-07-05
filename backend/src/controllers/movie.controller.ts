@@ -1,27 +1,8 @@
 import { prisma } from "../lib/prisma.js";
 import { HttpError } from "../utils/http-error.js";
-import { calculateAverageRating } from "../utils/movie-response.js";
-
-interface MovieInput {
-  title: string;
-  synopsis: string;
-  coverUrl: string;
-}
-
-const movieListInclude = {
-  ratings: {
-    select: {
-      value: true
-    }
-  }
-} as const;
+import type { MovieInput } from "../types/movie.js";
 
 const movieDetailInclude = {
-  ratings: {
-    select: {
-      value: true
-    }
-  },
   comments: {
     where: {
       hidden: false
@@ -42,17 +23,11 @@ const movieDetailInclude = {
 } as const;
 
 export const listMovies = async () => {
-  const movies = await prisma.movie.findMany({
+  return prisma.movie.findMany({
     orderBy: {
       createdAt: "desc"
-    },
-    include: movieListInclude
+    }
   });
-
-  return movies.map(({ ratings, ...movie }) => ({
-    ...movie,
-    avgRating: calculateAverageRating(ratings.map((rating) => rating.value))
-  }));
 };
 
 export const getMovieById = async (movieId: number) => {
@@ -65,11 +40,23 @@ export const getMovieById = async (movieId: number) => {
     throw new HttpError(404, "Movie not found.");
   }
 
-  const { ratings, comments, ...movieData } = movie;
+  const { comments, ...movieData } = movie;
+  const ratings = await prisma.rating.findMany({
+    where: {
+      OR: comments.map((comment) => ({
+        userId: comment.userId,
+        movieId: comment.movieId
+      }))
+    },
+    select: {
+      userId: true,
+      movieId: true,
+      value: true
+    }
+  });
 
   return {
     ...movieData,
-    avgRating: calculateAverageRating(ratings.map((rating) => rating.value)),
     comments: comments.map((comment) => ({
       id: comment.id,
       content: comment.content,
@@ -77,6 +64,9 @@ export const getMovieById = async (movieId: number) => {
       flagged: comment.flagged,
       movieId: comment.movieId,
       userId: comment.userId,
+      userRating:
+        ratings.find((rating) => rating.userId === comment.userId && rating.movieId === comment.movieId)?.value ??
+        null,
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
       user: comment.user
@@ -120,4 +110,3 @@ export const deleteMovie = async (movieId: number) => {
 
   return { message: "Movie deleted successfully." };
 };
-

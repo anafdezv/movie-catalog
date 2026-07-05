@@ -1,5 +1,4 @@
 import {
-  createContext,
   type PropsWithChildren,
   startTransition,
   useEffect,
@@ -8,24 +7,10 @@ import {
 } from "react";
 
 import { loginRequest, registerRequest } from "@/api/auth";
-import type { AuthResponse, AuthUser, LoginInput, RegisterInput } from "@/types/auth";
-
-interface AuthContextValue {
-  isAuthenticated: boolean;
-  isAdmin: boolean;
-  token: string | null;
-  user: AuthUser | null;
-  isHydrated: boolean;
-  login: (input: LoginInput) => Promise<void>;
-  register: (input: RegisterInput) => Promise<void>;
-  logout: () => void;
-  setAuthState: (value: AuthResponse) => void;
-  updateUser: (value: AuthUser) => void;
-}
+import { AuthContext, type AuthContextValue } from "@/contexts/auth-context";
+import type { AuthResponse, AuthUser } from "@/types/auth";
 
 const STORAGE_KEY = "movie-catalog-auth";
-
-export const AuthContext = createContext<AuthContextValue | null>(null);
 
 const readStoredState = (): AuthResponse | null => {
   const rawValue = localStorage.getItem(STORAGE_KEY);

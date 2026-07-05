@@ -90,15 +90,13 @@ export function HomePage() {
         <div className="altitude-shell flex min-h-[720px] items-center">
           <div className="max-w-3xl space-y-7 py-16 sm:py-18 lg:py-24">
             <div className="space-y-5">
-              <p className="altitude-eyebrow">Issue 07 · Summer Sky</p>
               <h1 className="font-display text-[2.9rem] leading-[0.92] tracking-[-0.06em] text-[#f6efe3] sm:text-[4rem] lg:text-[4.9rem]">
                 Cinema at <span className="italic text-[#ff9d42]">thirty-</span>
                 <br />
                 <span className="italic text-[#ff9d42]">eight</span> thousand feet.
               </h1>
               <p className="max-w-2xl text-[0.95rem] leading-7 text-[#c1bbb2] sm:text-[1rem]">
-                A hand-curated catalog of films for the long haul — rated by the passengers in the
-                seats around you.
+                Browse movies, read comments, and rate your favorites.
               </p>
             </div>
 
@@ -106,13 +104,13 @@ export function HomePage() {
               {featuredMovie ? (
                 <Button asChild size="lg">
                   <Link to={`/movies/${featuredMovie.id}`}>
-                    Watch this month&apos;s feature
+                    View featured movie
                     <ArrowRight className="size-4" />
                   </Link>
                 </Button>
               ) : null}
               <Button asChild size="lg" variant="outline">
-                <a href="#catalog">Browse the catalog</a>
+                <a href="#catalog">Browse catalog</a>
               </Button>
             </div>
           </div>
@@ -130,10 +128,10 @@ export function HomePage() {
             }}
           >
             <div className="grid gap-8 lg:grid-cols-[280px_1fr_auto] lg:items-center">
-              <div className="overflow-hidden rounded-[26px]">
+              <div className="overflow-hidden rounded-[26px] bg-[#0a121b]">
                 <img
                   alt={featuredMovie.title}
-                  className="aspect-[0.72] w-full object-cover"
+                  className="aspect-[2/3] w-full object-contain"
                   src={featuredMovie.coverUrl}
                 />
               </div>
@@ -167,10 +165,10 @@ export function HomePage() {
         <section className="space-y-7" id="catalog">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-3">
-            <p className="altitude-kicker">The catalog</p>
+            <p className="altitude-kicker">Movie Catalog</p>
             <div className="space-y-2">
               <h2 className="font-display text-[2.8rem] tracking-[-0.05em] text-[#f6efe3]">
-                On board this week
+                Available Movies
               </h2>
               <p className="text-base text-[#8f8a83]">
                 Search by title or filter by genre.
@@ -215,7 +213,7 @@ export function HomePage() {
           <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <Card key={index} className="overflow-hidden border-white/6 bg-[#0d1722] py-0">
-                <Skeleton className="aspect-[0.78] w-full" />
+                <Skeleton className="aspect-[2/3] w-full" />
                 <CardContent className="space-y-3 p-4">
                   <Skeleton className="h-8 w-2/3" />
                   <Skeleton className="h-4 w-1/3" />

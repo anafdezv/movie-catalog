@@ -1,19 +1,6 @@
 import { prisma } from "../lib/prisma.js";
 import { HttpError } from "../utils/http-error.js";
-
-interface CreateCommentInput {
-  content: string;
-  movieId: number;
-}
-
-interface UpdateCommentInput {
-  content: string;
-}
-
-interface ModerateCommentInput {
-  hidden?: boolean;
-  flagged?: boolean;
-}
+import type { CreateCommentInput, ModerateCommentInput, UpdateCommentInput } from "../types/comment.js";
 
 const commentInclude = {
   movie: {
@@ -68,6 +55,17 @@ export const createComment = async (userId: number, input: CreateCommentInput) =
 
   if (!movie) {
     throw new HttpError(404, "Movie not found.");
+  }
+
+  const existingComment = await prisma.comment.findFirst({
+    where: {
+      movieId: input.movieId,
+      userId
+    }
+  });
+
+  if (existingComment) {
+    throw new HttpError(409, "You already commented on this movie. Edit your existing comment instead.");
   }
 
   return prisma.comment.create({
